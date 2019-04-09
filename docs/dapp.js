@@ -171,7 +171,7 @@ DApp = {
                     let markup = $('#transactions-table').append(
                         '<tr><td>' + myJson[txs[i]].tx.nonce + '</td>'
                         + '<td>' + destination + '</td>'
-                        + '<td>' + myJson[txs[i]].tx.value + '</td>'
+                        + '<td>' + ethers.utils.formatEther(myJson[txs[i]].tx.value) + '</td>'
                         + '<td>' + myJson[txs[i]].tx.data + '</td>'
                         + '<td>' + signatories.length + '</td>'
                         + '<td>' + sum + '</td>'
