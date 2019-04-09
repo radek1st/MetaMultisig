@@ -8,13 +8,13 @@ const Transaction = [
   { name: "nonce", type: "uint256" }
 ];
 
-
 DApp = {
     transactions: null,
     walletContract: null,
     walletAbi: [{"constant":true,"inputs":[],"name":"threshold","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"destinations","type":"address[]"},{"name":"values","type":"uint256[]"},{"name":"datas","type":"bytes[]"}],"name":"multicall","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"keyholders","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"destination","type":"address"},{"name":"value","type":"uint256"},{"name":"data","type":"bytes"},{"name":"nonce","type":"uint256"},{"name":"sigs","type":"bytes[]"}],"name":"submit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_threshold","type":"uint256"}],"name":"setThreshold","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"destination","type":"address"},{"name":"value","type":"uint256"},{"name":"data","type":"bytes"},{"name":"nonce","type":"uint256"}],"name":"getTransactionHash","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"nextNonce","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"keyholder","type":"address"},{"name":"weight","type":"uint256"}],"name":"setKeyholderWeight","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"addresses","type":"address[]"},{"name":"weights","type":"uint256[]"},{"name":"_threshold","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"keyholder","type":"address"},{"indexed":false,"name":"weight","type":"uint256"}],"name":"KeyholderChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"threshold","type":"uint256"}],"name":"ThresholdChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"destination","type":"address"},{"indexed":false,"name":"value","type":"uint256"},{"indexed":false,"name":"data","type":"bytes"},{"indexed":false,"name":"nonce","type":"uint256"},{"indexed":false,"name":"returndata","type":"bytes"},{"indexed":false,"name":"signatories","type":"address[]"}],"name":"Transaction","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"sender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Deposit","type":"event"}],
     emptyAddress: '0x0000000000000000000000000000000000000000',
     walletAddress: "0x44F5027aAACd75aB89b40411FB119f8Ca82fE733",
+    apiServer: "http://13.210.217.194:8080/api/contracts",
 
     init: function() {
         console.log('[x] Initializing DApp.');
@@ -56,7 +56,7 @@ DApp = {
         DApp.loadAccount();
         let threshold = await DApp.walletContract.threshold();
 
-        fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733')
+        fetch(DApp.apiServer + '/' + DApp.walletAddress)
             .then(function(response) {
                 return response.json();
             })
@@ -83,7 +83,7 @@ DApp = {
     },
 
     getNextNonce: async function() {
-        let api = await fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/nextNonce');
+        let api = await fetch(DApp.apiServer + '/' + DApp.walletAddress + '/nextNonce');
         let apiNonce = (await api.json()).nonce;
         console.log("apiNonce", apiNonce);
         let nextNonce = (await DApp.walletContract.nextNonce()).toNumber();
@@ -148,7 +148,7 @@ DApp = {
     },
 
     updateTransactions: function(){
-        fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs')
+        fetch(DApp.apiServer + '/' + DApp.walletAddress + '/txs')
             .then(function(response) {
                 return response.json();
             })
@@ -180,7 +180,7 @@ DApp = {
 
     signAndStore: function(tx){
         let domainData = {
-          verifyingContract: "0x44F5027aAACd75aB89b40411FB119f8Ca82fE733"
+          verifyingContract: DApp.walletAddress
         };
         console.log(tx);
         let message = {
@@ -213,7 +213,7 @@ DApp = {
                 }
             });
         }).then(function(result) {
-            return $.post("http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs", {
+            return $.post(DApp.apiServer + "/" + DApp.walletAddress + "/txs", {
               "tx": tx,
               "signature": result.result
             });
