@@ -139,12 +139,13 @@ DApp = {
                 DApp.updateTransactions();
             });
         });
+    },
 
-        $(".sign-button").click(function(){
-          let tx = DApp.transactions[this.dataset.txid];
-          DApp.signAndStore(tx.tx).then(function() {
-              DApp.updateTransactions();
-          });
+    addSignHandler: function(button, tx) {
+        button.click(function() {
+            DApp.signAndStore(tx).then(function() {
+                DApp.updateTransactions();
+            });
         });
     },
 
@@ -167,14 +168,15 @@ DApp = {
                     }
                     let destination = await DApp.lookupAddress(myJson[txs[i]].tx.destination);
                     //Nonce	Destination	Value	Current Weights Confirmed	Threshold Reached
-                    $('#transactions-table').append(
+                    let markup = $('#transactions-table').append(
                         '<tr><td>' + myJson[txs[i]].tx.nonce + '</td>'
                         + '<td>' + destination + '</td>'
                         + '<td>' + myJson[txs[i]].tx.value + '</td>'
                         + '<td>' + myJson[txs[i]].tx.data + '</td>'
                         + '<td>' + signatories.length + '</td>'
                         + '<td>' + sum + '</td>'
-                        + '<td>' + '<input type="button" class="sign-button" data-txid="' + txs[i] + '" value="Sign">' + '</td></tr>');
+                        + '<td>' + '<input type="button" class="sign-button" value="Sign">' + '</td></tr>');
+                    DApp.addSignHandler($("input", markup), myJson[txs[i]].tx);
                 }
             });
 
