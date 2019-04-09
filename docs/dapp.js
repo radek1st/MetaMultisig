@@ -126,6 +126,26 @@ DApp = {
                     });
                 });
         });
+        $("#update-threshold-button").click(function(){
+            fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/nextNonce ')
+                .then(function(response) {
+                    return response.json();
+                }).then(function(nonce) {
+                    let weight = parseInt($("#newThreshold").val());
+                    var interface = new ethers.utils.Interface(DApp.walletAbi);
+                    let data = interface.functions.setThreshold.encode([weight]);
+                    let tx = {
+                      destination: DApp.walletAddress,
+                      value: "0",
+                      data: data,
+                      nonce: nonce.nonce
+                    };
+                    console.log(tx);
+                    DApp.signAndStore(tx).then(function() {
+                      DApp.updateTransactions();
+                    });
+                });
+        });
         $(".sign-button").click(function(){
           var tx = DApp.transactions[this.dataset.txid];
           DApp.signAndStore(tx.tx).then(function() {
