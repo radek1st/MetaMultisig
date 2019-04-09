@@ -3,6 +3,9 @@ let app        = express();                 // define our app using express
 let bodyParser = require('body-parser');
 let cors = require('cors');
 
+let Web3 = require('web3');
+let web3 = new Web3(new Web3.providers.HttpProvider('https://rpc.slock.it/goerli'));
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
@@ -52,12 +55,7 @@ router.get('/contracts/:contract/nextNonce', function(req, res) {
     }
 });
 
-// {
-//     txId,
-//     tx {nonce destination data value},
-//     signatures []
-// }
-router.post('/contracts/:contract/txs', function(req, res) {
+router.post('/contracts/:contract/txs', async function(req, res) {
     if(!contracts[req.params.contract].txs) {
         contracts[req.params.contract].txs = {}
     }
@@ -66,18 +64,32 @@ router.post('/contracts/:contract/txs', function(req, res) {
     let txId = hashCode(tx);
     let signature = req.body.signature;
 
+    let signer = await web3.eth.personal.ecRecover(JSON.stringify(tx), signature);
+    if(contracts[req.params.contract].users[signer] == undefined) {
+        console.log("Signer", signer, "is not a keyholder");
+        res.status(400).json({ errorMsg:  "Signer is not a keyholder"});
+        return;
+    } else {
+        console.log("signer", signer, "weight", contracts[req.params.contract].users[signer]);
+    }
+
     if(!contracts[req.params.contract].txs[txId]){
         //create
-        contracts[req.params.contract].txs[txId] = {signatures:[signature], txId:txId, tx:tx};
+        contracts[req.params.contract].txs[txId] = {signatures:[signature], txId:txId, tx:tx, signatories:[signer]};
     } else {
         //append signature
         contracts[req.params.contract].txs[txId].signatures.push(signature);
+        contracts[req.params.contract].txs[txId].signatures = Array.from(new Set(contracts[req.params.contract].txs[txId].signatures));
+
+        contracts[req.params.contract].txs[txId].signatories.push(signer);
+        contracts[req.params.contract].txs[txId].signatories = Array.from(new Set(contracts[req.params.contract].txs[txId].signatories));
+
+        //contracts[req.params.contract].txs[txId].signatories = contracts[req.params.contract].txs[txId].signatories.sort();
     }
 
     let sum = 0;
-    for (let sig in contracts[req.params.contract].txs[txId].signatures) {
-        //ecrecover user
-        let user = contracts[req.params.contract].txs[txId].signatures[sig].user;
+    for (let sig in contracts[req.params.contract].txs[txId].signatories) {
+        let user = contracts[req.params.contract].txs[txId].signatories[sig].user;
         sum += contracts[req.params.contract].users[user];
     }
 
@@ -97,29 +109,6 @@ router.get('/contracts/:contract/txs', function(req, res) {
         res.json( { txs: {}});
     }
 });
-
-// router.get('/contracts/:contract/txs/:txId', function(req, res) {
-//     res.json(contracts[req.params.contract].txs[req.params.txId]);
-// });
-//
-// router.post('/contracts/:contract/txs/:txId', function(req, res) {
-//     contracts[req.params.contract].txs[req.params.txId].signatures.push(req.body);
-//
-//     let sum = 0;
-//     for (let sig in contracts[req.params.contract].txs[req.params.txId].signatures) {
-//         let user = contracts[req.params.contract].txs[req.params.txId].signatures[sig].user;
-//         sum += contracts[req.params.contract].users[user];
-//     }
-//     console.log("past - sum",sum,"threshold",contracts[req.params.contract].threshold);
-//
-//     if(sum >= contracts[req.params.contract].threshold) {
-//         contracts[req.params.contract].txs[req.params.txId].thresholdReached = true;
-//     } else {
-//         contracts[req.params.contract].txs[req.params.txId].thresholdReached = false;
-//     }
-//
-//     res.json(contracts[req.params.contract].txs[req.params.txId]);
-// });
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
