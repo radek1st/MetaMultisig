@@ -60,12 +60,13 @@ DApp = {
             .then(function(response) {
                 return response.json();
             })
-            .then(function(myJson) {
+            .then(async function(myJson) {
                 $('#threshold').val(threshold);
                 $('#walletAddress').val(myJson.contract);
                 let users = Object.keys(myJson.users);
                 for(let i in users){
-                    $('#keyholders-table').append('<tr><td>' + users[i] + '</td><td>' + myJson.users[users[i]] + '</td></tr>');
+                    let account = await DApp.lookupAddress(users[i]);
+                    $('#keyholders-table').append('<tr><td>' + account + '</td><td>' + myJson.users[users[i]] + '</td></tr>');
                 }
             });
 
@@ -93,18 +94,17 @@ DApp = {
     },
 
     initActions: async function() {
-        $("#send-ether-button").click(function(){
+        $("#send-ether-button").click(async function(){
             let nextNonce = DApp.getNextNonce();
             let tx = {
-                destination: $("#addressOut").val(),
+                destination: await DApp.resolveName($("#addressOut").val()),
                 value: ethers.utils.parseEther($("#etherOut").val()).toString(),
                 data: "0x",
                 nonce: nextNonce
             };
             console.log(tx);
-            DApp.signAndStore(tx).then(function() {
-                DApp.updateTransactions();
-            });
+            await DApp.signAndStore(tx);
+            DApp.updateTransactions();
         });
 
         $("#update-threshold-button").click(async function(){
@@ -124,9 +124,10 @@ DApp = {
         });
         $("#set-weight-button").click(async function(){
             let nextNonce = DApp.getNextNonce();
-            let weight = parseInt($("#newThreshold").val());
+            let keyholder = $("#keyholderAddress").val();
+            let weight = parseInt($("#weight").val());
             let interface = new ethers.utils.Interface(DApp.walletAbi);
-            let data = interface.functions.setThreshold.encode([weight]);
+            let data = interface.functions.setKeyholderWeight.encode([keyholder, weight]);
             let tx = {
                 destination: DApp.walletAddress,
                 value: "0",
@@ -152,7 +153,7 @@ DApp = {
             .then(function(response) {
                 return response.json();
             })
-            .then(function(myJson) {
+            .then(async function(myJson) {
                 DApp.transactions = myJson;
                 console.log("XXXXX", JSON.stringify(myJson));
 
@@ -164,10 +165,11 @@ DApp = {
                         let signatory = signatories[i];
                         sum += myJson[txs[i]].signatories[signatory].weight;
                     }
+                    let destination = await DApp.lookupAddress(myJson[txs[i]].tx.destination);
                     //Nonce	Destination	Value	Current Weights Confirmed	Threshold Reached
                     $('#transactions-table').append(
                         '<tr><td>' + myJson[txs[i]].tx.nonce + '</td>'
-                        + '<td>' + myJson[txs[i]].tx.destination + '</td>'
+                        + '<td>' + destination + '</td>'
                         + '<td>' + myJson[txs[i]].tx.value + '</td>'
                         + '<td>' + myJson[txs[i]].tx.data + '</td>'
                         + '<td>' + signatories.length + '</td>'
@@ -182,7 +184,6 @@ DApp = {
         let domainData = {
           verifyingContract: DApp.walletAddress
         };
-        console.log(tx);
         let message = {
           destination: tx.destination,
           value: tx.value,
@@ -238,6 +239,24 @@ DApp = {
         return DApp.walletContract.submit(tx.destination, tx.value, tx.data, tx.nonce, sigs);
     },
 
+    resolveName: async function(s){
+        if(!s.startsWith("0x")) {
+            let addr = await provider.resolveName(s);
+            if(addr != null) {
+                return addr;
+            }
+        }
+        return s;
+    },
+
+    lookupAddress: async function(a){
+        let name = await provider.lookupAddress(a);
+        if(name != null) {
+            return name;
+        }
+        return a;
+    },
+
     updateEtherBalance: function(){
         provider.getBalance(DApp.currentAccount).then(function(ethBalance) {
             console.log("user Eth balance", ethBalance);
@@ -253,7 +272,6 @@ DApp = {
         $('#userWallet').val(DApp.currentAccount);
         //$('#walletAddress').val(DApp.walletAddress);
         DApp.updateEtherBalance();
-        DApp.updateTokenBalance();
     }
 }
 
