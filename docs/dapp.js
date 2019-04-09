@@ -155,10 +155,13 @@ DApp = {
             //     }
             // });
         });
-        $(".sign-button").click(function(b){
+        $(".sign-button").click(function(){
           var tx = DApp.transactions[this.dataset.txid];
-          DApp.getUserSignature(tx, function(err, sig) {
-            console.log(sig);
+          DApp.getUserSignature(tx.tx, function(err, sig) {
+            $.post("http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs", {
+              "tx": tx.tx,
+              "signature": sig
+            });
           });
         });
     },
@@ -167,12 +170,14 @@ DApp = {
         let domainData = {
           verifyingContract: "0x44F5027aAACd75aB89b40411FB119f8Ca82fE733"
         };
+        console.log(tx);
         let message = {
           destination: tx.destination,
           value: tx.value,
           data: tx.data,
           nonce: tx.nonce
         };
+        console.log(message);
         let data = JSON.stringify({
             types: {
                 EIP712Domain: EIP712Domain,
