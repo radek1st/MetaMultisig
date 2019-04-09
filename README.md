@@ -6,13 +6,17 @@
 
 ```node server.js```
 
-and  HTTP POST to:
+Create the wallet contract entry:
 
-```localhost:8080/api/contracts/```
+```
+curl -X POST -H "Content-Type: application/json" --data '{"contract":"0x44F5027aAACd75aB89b40411FB119f8Ca82fE733", "nonce":0, "users":{"0xa303ddC620aa7d1390BACcc8A495508B183fab59":1,"0x3Abf4443F1Fd1Cc89fc129B44e71dd9c96e260aB":1}, "threshold":1}' http://localhost:8080/api/contracts/
+```
 
-with JSON body:
+Create a sample transaction:
 
-```{"contract":"0x44F5027aAACd75aB89b40411FB119f8Ca82fE733", "nonce":0, "users":{"0xa303ddC620aa7d1390BACcc8A495508B183fab59":1,"0x3Abf4443F1Fd1Cc89fc129B44e71dd9c96e260aB":1}, "threshold":1}```
+```
+curl -X POST -H "Content-Type: application/json" --data '{"tx":{"nonce": 0, "destination": "0xa303ddC620aa7d1390BACcc8A495508B183fab59", "value": "1000000000000000000", "data": "0x"}, "signature": "foo"}' http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs
+```
 
 ## Run UI
 
