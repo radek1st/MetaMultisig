@@ -1,0 +1,7 @@
+build
+node_modules
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+*.idea
+deployment

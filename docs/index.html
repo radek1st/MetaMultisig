@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Off-chain Signing Multisig Wallet</title>
+
+    <!-- Libraries -->
+    <link rel="stylesheet" href="lib/bootstrap.css">
+
+    <script src="lib/jquery-3.2.1.min.js"></script>
+    <script src="lib/popper-1.12.3.min.js"></script>
+    <script src="lib/bootstrap-4.0.0-beta.2.min.js"></script>
+    <script src="lib/web3-1.0.min.js"></script>
+    <!-- Load DApp -->
+    <script src="dapp.js"></script>
+
+</head>
+<body>
+<br/>
+<div id="dapp" class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">Off-chain Signing Multisig Wallet</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarColor01">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" target="_blank" href="https://github.com/radek1st">About</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <br/>
+
+    <div class="jumbotron">
+        <p class="lead">Wallet Balances:</p>
+        <!--<hr class="my-4">-->
+            <div class="row">
+                <div class="col form-group col-md-6">
+                    <label for="userWallet">Wallet Address:</label>
+                    <input id="userWallet" type="text" disabled class="form-control" placeholder="Wallet Ethereum Address">
+                </div>
+                <div class="col form-group">
+                <label for="threshold">Wallet Threshold:</label>
+                <input id="threshold" type="text" disabled class="form-control" placeholder="Threshold">
+                </div>
+                <div class="col form-group">
+                    <label for="userEtherBalance">Ether Balance:</label>
+                    <input id="userEtherBalance" type="text" disabled class="form-control" placeholder="Wallet Ethereum Balance">
+                </div>
+
+            </div>
+            <hr class="my-4">
+            <p class="lead">Keyholders:</p>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Address</th>
+                <th scope="col">Weight</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th scope="row">1</th>
+                <td>Otto</td>
+            </tr>
+            <tr>
+                <th scope="row">2</th>
+                <td>Thornton</td>
+            </tr>
+            <tr>
+                <th scope="row">3</th>
+                <td>the Bird</td>
+            </tr>
+            </tbody>
+        </table>
+
+            <!--<div class="row">-->
+                <!--<div class="col form-group">-->
+                    <!--<label for="etherIn">Ether Amount To Sell:</label>-->
+                    <!--<input id="etherIn" type="number" class="form-control" placeholder="Ether Amount to Sell">-->
+                <!--</div>-->
+                <!--<div class="col form-group">-->
+                    <!--<label for="tokenOut">Token Amount to Buy:</label>-->
+                    <!--<input id="tokenOut" type="number" class="form-control" placeholder="Token Amount to Buy">-->
+                <!--</div>-->
+                <!--<div class="col form-group">-->
+                    <!--<label for="buyRate">Token Buy Rate For 1 Ether:</label>-->
+                    <!--<input id="buyRate" type="number" disabled class="form-control" placeholder="Token Buy Rate">-->
+                <!--</div>-->
+                <!--<div class="col form-group">-->
+                    <!--<label for="buy-tokens-button">&zwnj;</label>-->
+                    <!--<button id="buy-tokens-button" class="btn btn-primary btn-block text-white">Buy Tokens</button>-->
+                <!--</div>-->
+            <!--</div>-->
+            <hr class="my-4">
+            <p class="lead">Transactions:</p>
+            <div class="row">
+                <div class="col form-group">
+                    <label for="tokenIn">Token Amount To Sell:</label>
+                    <input id="tokenIn" type="number" class="form-control" placeholder="Token Amount to Sell">
+                </div>
+                <div class="col form-group">
+                    <label for="etherOut">Ether Amount To Buy:</label>
+                    <input id="etherOut" type="number" class="form-control" placeholder="Ether Amount to Buy">
+                </div>
+                <div class="col form-group">
+                    <label for="sellRate">Token Sell Rate For 1 Ether:</label>
+                    <input id="sellRate" type="number" disabled class="form-control" placeholder="Token Sell Rate">
+                </div>
+                <div class="col form-group">
+                    <button id="approve-tokens-button" class="btn btn-primary btn-block text-white">Approve Tokens</button>
+                    <button id="sell-tokens-button" class="btn btn-primary btn-block text-white">Sell Tokens</button>
+                </div>
+            </div>
+
+
+    </div>
+
+    <!--<nav class="navbar navbar-expand-lg navbar-light bg-light">-->
+        <!--<a class="navbar-brand" target="_blank" href="https://www.linkedin.com/in/radekostrowski">Radek Ostrowski</a>-->
+        <!--<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor03" aria-controls="navbarColor03" aria-expanded="false" aria-label="Toggle navigation">-->
+            <!--<span class="navbar-toggler-icon"></span>-->
+        <!--</button>-->
+
+        <!--<div class="collapse navbar-collapse" id="navbarColor03">-->
+            <!--<ul class="navbar-nav mr-auto">-->
+                <!--<li class="nav-item">-->
+                    <!--<a class="nav-link" target="_blank" href="https://wisentcapital.com">WisentCapital</a>-->
+                <!--</li>-->
+                <!--<li class="nav-item">-->
+                    <!--<a class="nav-link" target="_blank" href="https://startonchain.com">StartOnChain</a>-->
+                <!--</li>-->
+                <!--<li class="nav-item">-->
+                    <!--<a class="nav-link" target="_blank" href="http://thomaspark.co">Bootstrap template by Thomas Park</a>-->
+                <!--</li>-->
+            <!--</ul>-->
+        <!--</div>-->
+    <!--</nav>-->
+    <br/>
+</div>
+
+<div class="modal" id="metamaskModal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">No web3 instance detected!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>If you are using this ĐApp from a regular browser please install
+                    <a href="https://metamask.io">MetaMask</a> first.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
