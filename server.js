@@ -62,7 +62,7 @@ router.get('/contracts/:contract/nextNonce', function(req, res) {
             let nonce = contracts[req.params.contract].txs[txId].tx.nonce;
             if(nonce > maxNonce) maxNonce = nonce;
         }
-        res.json({ nonce: maxNonce+1});
+        res.json({ nonce: Number(maxNonce)+1});
     }
 });
 
@@ -110,31 +110,16 @@ router.post('/contracts/:contract/txs', async function(req, res) {
 
     if(!contracts[req.params.contract].txs[txId]){
         //create
-        contracts[req.params.contract].txs[txId] = {signatures:[signature], txId:txId, tx:tx, signatories:[signer]};
+        let signatories = {};
+        signatories[signer] = {signature: signature, weight: contracts[req.params.contract].users[signer]};
+        contracts[req.params.contract].txs[txId] = {tx:tx, signatories:signatories, threshold: contracts[req.params.contract].threshold};
     } else {
         //append signature
-        contracts[req.params.contract].txs[txId].signatures.push(signature);
-        contracts[req.params.contract].txs[txId].signatures = Array.from(new Set(contracts[req.params.contract].txs[txId].signatures));
-
-        contracts[req.params.contract].txs[txId].signatories.push(signer);
-        contracts[req.params.contract].txs[txId].signatories = Array.from(new Set(contracts[req.params.contract].txs[txId].signatories));
-
-        //contracts[req.params.contract].txs[txId].signatories = contracts[req.params.contract].txs[txId].signatories.sort();
+        let newSignatory = {signature: signature, weight: contracts[req.params.contract].users[signer]};
+        contracts[req.params.contract].txs[txId].signatories[signer] = newSignatory;
     }
 
-    let sum = 0;
-    for (let sig in contracts[req.params.contract].txs[txId].signatories) {
-        let user = contracts[req.params.contract].txs[txId].signatories[sig].user;
-        sum += contracts[req.params.contract].users[user];
-    }
-
-    if(sum >= contracts[req.params.contract].threshold) {
-        contracts[req.params.contract].txs[txId].thresholdReached = true;
-    } else {
-        contracts[req.params.contract].txs[txId].thresholdReached = false;
-    }
-
-    res.json({ txId: txId, details: contracts[req.params.contract].txs[txId] });
+    res.json(contracts[req.params.contract].txs[txId]);
 });
 
 router.get('/contracts/:contract/txs', function(req, res) {

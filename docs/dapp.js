@@ -75,24 +75,23 @@ DApp = {
             .then(function(myJson) {
                 DApp.transactions = myJson;
                 console.log("XXXXX", JSON.stringify(myJson));
-                //
-                // XXXXX {"1667658391":{"signatures":["signature1","signature2"],
-                //     "txId":1667658391,"tx":{"nonce":2,"destination":"0x3Abf4443F1Fd1Cc89fc129B44e71dd9c96e260aB","data":"0x0","value":"0x0"},
-                //     "thresholdReached":false}}
-
 
                 let txs = Object.keys(myJson);
                 for(let i in txs){
+                    let signatories = Object.keys(myJson[txs[i]].signatories);
+                    let sum = 0;
+                    for(let i in signatories){
+                        let signatory = signatories[i];
+                        sum += myJson[txs[i]].signatories[signatory].weight;
+                    }
                     //Nonce	Destination	Value	Current Weights Confirmed	Threshold Reached
-                    console.log("zzz", txs[i], myJson[txs[i]].tx.nonce, myJson[txs[i]].signatures.length, myJson[txs[i]].thresholdReached);
-                    console.log("nonce",myJson[txs[i]].tx.nonce);
                     $('#transactions-table').append(
                         '<tr><td>' + myJson[txs[i]].tx.nonce + '</td>'
                         + '<td>' + myJson[txs[i]].tx.destination + '</td>'
                         + '<td>' + myJson[txs[i]].tx.value + '</td>'
                         + '<td>' + myJson[txs[i]].tx.data + '</td>'
-                        + '<td>' + myJson[txs[i]].signatures.length + '</td>'
-                        + '<td>' + myJson[txs[i]].thresholdReached + '</td>'
+                        + '<td>' + signatories.length + '</td>'
+                        + '<td>' + sum + '</td>'
                         + '<td>' + '<input type="button" class="sign-button" data-txid="' + txs[i] + '" value="Sign">' + '</td></tr>');
                 }
             });
