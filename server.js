@@ -2,13 +2,24 @@ let express    = require('express');        // call express
 let app        = express();                 // define our app using express
 let bodyParser = require('body-parser');
 let cors = require('cors');
+let sigUtil = require('eth-sig-util');
 
-let Web3 = require('web3');
-let web3 = new Web3(new Web3.providers.HttpProvider('https://rpc.slock.it/goerli'));
+// let Web3 = require('web3');
+// let web3 = new Web3(new Web3.providers.HttpProvider('https://rpc.slock.it/goerli'));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
+
+const EIP712Domain = [
+    { name: "verifyingContract", type: "address" }
+];
+const Transaction = [
+    { name: "destination", type: "address" },
+    { name: "value", type: "uint256"},
+    { name: "data", type: "bytes" },
+    { name: "nonce", type: "uint256" }
+];
 
 let port = process.env.PORT || 8080;        // set our port
 
@@ -64,7 +75,31 @@ router.post('/contracts/:contract/txs', async function(req, res) {
     let txId = hashCode(tx);
     let signature = req.body.signature;
 
-    let signer = await web3.eth.personal.ecRecover(JSON.stringify(tx), signature);
+    //let signer = await web3.eth.personal.ecRecover(JSON.stringify(tx), signature);
+
+    let domainData = {
+        verifyingContract: req.params.contract
+    };
+
+    let message = {
+        destination: tx.destination,
+        value: tx.value,
+        data: tx.data,
+        nonce: tx.nonce
+    };
+
+    let data = {
+        types: {
+            EIP712Domain: EIP712Domain,
+            Transaction: Transaction
+        },
+        domain: domainData,
+        primaryType: "Transaction",
+        message: message
+    };
+
+    let signer = sigUtil.recoverTypedSignature({data:data, sig:signature});
+
     if(contracts[req.params.contract].users[signer] == undefined) {
         console.log("Signer", signer, "is not a keyholder");
         res.status(400).json({ errorMsg:  "Signer is not a keyholder"});
