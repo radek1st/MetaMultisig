@@ -85,13 +85,13 @@ DApp = {
         let api = await fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/nextNonce');
         let apiNonce = (await api.json()).nonce;
         console.log("apiNonce", apiNonce);
-        let nextNonce = await DApp.walletContract.nextNonce();
+        let nextNonce = (await DApp.walletContract.nextNonce()).toNumber();
         if(nextNonce < apiNonce) nextNonce = apiNonce;
         console.log("nextNonce", nextNonce);
         return nextNonce;
     },
 
-    initActions: function() {
+    initActions: async function() {
         $("#send-ether-button").click(function(){
             let nextNonce = DApp.getNextNonce();
             let tx = {
@@ -106,7 +106,7 @@ DApp = {
             });
         });
 
-        $("#update-threshold-button").click(function(){
+        $("#update-threshold-button").click(async function(){
             let nextNonce = DApp.getNextNonce();
             let threshold = parseInt($("#newThreshold").val());
             let interface = new ethers.utils.Interface(DApp.walletAbi);
@@ -121,7 +121,7 @@ DApp = {
               DApp.updateTransactions();
             });
         });
-        $("#set-weight-button").click(function(){
+        $("#set-weight-button").click(async function(){
             let nextNonce = DApp.getNextNonce();
             let weight = parseInt($("#newThreshold").val());
             let interface = new ethers.utils.Interface(DApp.walletAbi);
@@ -145,7 +145,6 @@ DApp = {
           });
         });
     },
-
 
     updateTransactions: function(){
         fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs')
