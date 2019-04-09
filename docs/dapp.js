@@ -95,7 +95,7 @@ DApp = {
 
     initActions: async function() {
         $("#send-ether-button").click(async function(){
-            let nextNonce = DApp.getNextNonce();
+            let nextNonce = await DApp.getNextNonce();
             let tx = {
                 destination: await DApp.resolveName($("#addressOut").val()),
                 value: ethers.utils.parseEther($("#etherOut").val()).toString(),
@@ -108,7 +108,7 @@ DApp = {
         });
 
         $("#update-threshold-button").click(async function(){
-            let nextNonce = DApp.getNextNonce();
+            let nextNonce = await DApp.getNextNonce();
             let threshold = parseInt($("#newThreshold").val());
             let interface = new ethers.utils.Interface(DApp.walletAbi);
             let data = interface.functions.setThreshold.encode([threshold]);
@@ -123,7 +123,7 @@ DApp = {
             });
         });
         $("#set-weight-button").click(async function(){
-            let nextNonce = DApp.getNextNonce();
+            let nextNonce = await DApp.getNextNonce();
             let keyholder = $("#keyholderAddress").val();
             let weight = parseInt($("#weight").val());
             let interface = new ethers.utils.Interface(DApp.walletAbi);
