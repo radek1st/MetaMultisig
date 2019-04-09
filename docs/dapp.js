@@ -14,10 +14,7 @@ DApp = {
     walletContract: null,
     walletAbi: [{"constant":true,"inputs":[],"name":"threshold","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"destinations","type":"address[]"},{"name":"values","type":"uint256[]"},{"name":"datas","type":"bytes[]"}],"name":"multicall","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"keyholders","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"destination","type":"address"},{"name":"value","type":"uint256"},{"name":"data","type":"bytes"},{"name":"nonce","type":"uint256"},{"name":"sigs","type":"bytes[]"}],"name":"submit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_threshold","type":"uint256"}],"name":"setThreshold","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"destination","type":"address"},{"name":"value","type":"uint256"},{"name":"data","type":"bytes"},{"name":"nonce","type":"uint256"}],"name":"getTransactionHash","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"nextNonce","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"keyholder","type":"address"},{"name":"weight","type":"uint256"}],"name":"setKeyholderWeight","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"addresses","type":"address[]"},{"name":"weights","type":"uint256[]"},{"name":"_threshold","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"keyholder","type":"address"},{"indexed":false,"name":"weight","type":"uint256"}],"name":"KeyholderChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"threshold","type":"uint256"}],"name":"ThresholdChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"destination","type":"address"},{"indexed":false,"name":"value","type":"uint256"},{"indexed":false,"name":"data","type":"bytes"},{"indexed":false,"name":"nonce","type":"uint256"},{"indexed":false,"name":"returndata","type":"bytes"},{"indexed":false,"name":"signatories","type":"address[]"}],"name":"Transaction","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"sender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Deposit","type":"event"}],
     emptyAddress: '0x0000000000000000000000000000000000000000',
-
     walletAddress: "0x44F5027aAACd75aB89b40411FB119f8Ca82fE733",
-
-//{"contract":"0x44F5027aAACd75aB89b40411FB119f8Ca82fE733", "nonce":0, "users":{"0xa303ddC620aa7d1390BACcc8A495508B183fab59":1,"0x3Abf4443F1Fd1Cc89fc129B44e71dd9c96e260aB":1}, "threshold":1}
 
     init: function() {
         console.log('[x] Initializing DApp.');
@@ -71,47 +68,32 @@ DApp = {
                 }
             });
 
-        // {
-        //     "nonces": {
-        //     "0": {
-        //         "signatures": [
-        //             {
-        //                 "user": "0x02",
-        //                 "msg": "something else"
-        //             }
-        //         ],
-        //             "thresholdReached": false
-        //     },
-        //     "1": {
-        //         "signatures": [
-        //             {
-        //                 "user": "0x02",
-        //                 "msg": "something else"
-        //             }
-        //         ],
-        //             "thresholdReached": false
-        //     }
-        // }
-        // }
-
-        fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/signatures')
+        fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs')
             .then(function(response) {
                 return response.json();
             })
             .then(function(myJson) {
-                DApp.transactions = myJson.nonces;
+                DApp.transactions = myJson;
                 console.log("XXXXX", JSON.stringify(myJson));
+                //
+                // XXXXX {"1667658391":{"signatures":["signature1","signature2"],
+                //     "txId":1667658391,"tx":{"nonce":2,"destination":"0x3Abf4443F1Fd1Cc89fc129B44e71dd9c96e260aB","data":"0x0","value":"0x0"},
+                //     "thresholdReached":false}}
 
-                let nonces = Object.keys(myJson.nonces);
-                for(let i in nonces){
+
+                let txs = Object.keys(myJson);
+                for(let i in txs){
                     //Nonce	Destination	Value	Current Weights Confirmed	Threshold Reached
-                    console.log("zzz", nonces[i], myJson.nonces[nonces[i]].signatures.length, myJson.nonces[nonces[i]].thresholdReached);
-                    $('#transactions-table').append('<tr><td>' + nonces[i] + '</td>'
-                        + '<td>' + 'destination' + '</td>'
-                        + '<td>' + 'value' + '</td>'
-                        + '<td>' + myJson.nonces[nonces[i]].signatures.length + '</td>'
-                        + '<td>' + myJson.nonces[nonces[i]].thresholdReached + '</td>'
-                        + '<td>' + '<input type="button" class="sign-button" data-txid="' + nonces[i] + '" value="Sign">' + '</td></tr>');
+                    console.log("zzz", txs[i], myJson[txs[i]].tx.nonce, myJson[txs[i]].signatures.length, myJson[txs[i]].thresholdReached);
+                    console.log("nonce",myJson[txs[i]].tx.nonce);
+                    $('#transactions-table').append(
+                        '<tr><td>' + myJson[txs[i]].tx.nonce + '</td>'
+                        + '<td>' + myJson[txs[i]].tx.destination + '</td>'
+                        + '<td>' + myJson[txs[i]].tx.value + '</td>'
+                        + '<td>' + myJson[txs[i]].tx.data + '</td>'
+                        + '<td>' + myJson[txs[i]].signatures.length + '</td>'
+                        + '<td>' + myJson[txs[i]].thresholdReached + '</td>'
+                        + '<td>' + '<input type="button" class="sign-button" data-txid="' + txs[i] + '" value="Sign">' + '</td></tr>');
                 }
             });
     },
