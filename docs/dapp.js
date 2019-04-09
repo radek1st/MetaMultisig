@@ -110,16 +110,35 @@ DApp = {
                 .then(function(response) {
                     return response.json();
                 }).then(function(nonce) {
-                    let weight = parseInt($("#newThreshold").val());
-                    var interface = new ethers.utils.Interface(DApp.walletAbi);
-                    let data = interface.functions.setThreshold.encode([weight]);
+                    let threshold = parseInt($("#newThreshold").val());
+                    let interface = new ethers.utils.Interface(DApp.walletAbi);
+                    let data = interface.functions.setThreshold.encode([threshold]);
                     let tx = {
                       destination: DApp.walletAddress,
                       value: "0",
                       data: data,
                       nonce: nonce.nonce
                     };
-                    console.log(tx);
+                    DApp.signAndStore(tx).then(function() {
+                      DApp.updateTransactions();
+                    });
+                });
+        });
+        $("#set-weight-button").click(function(){
+            fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/nextNonce ')
+                .then(function(response) {
+                    return response.json();
+                }).then(function(nonce) {
+                    let keyholder = $("#keyholderAddress").val();
+                    let weight = parseInt($("#weight").val());
+                    let interface = new ethers.utils.Interface(DApp.walletAbi);
+                    let data = interface.functions.setKeyholderWeight.encode([keyholder, weight]);
+                    let tx = {
+                      destination: DApp.walletAddress,
+                      value: "0",
+                      data: data,
+                      nonce: nonce.nonce
+                    };
                     DApp.signAndStore(tx).then(function() {
                       DApp.updateTransactions();
                     });
