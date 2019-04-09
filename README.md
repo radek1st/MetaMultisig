@@ -20,7 +20,7 @@ Nick Johnson and Radek Ostrowski
 
 ### Solution
 
-MetaMultisigWallet uses off-line message signing for scalability, meta transactions and (de)centralised api.
+MetaMultisigWallet uses off-chain message signing for scalability, meta transactions and (de)centralised api.
 
 * Simple code, meaning less chances for exploits and easier to audit.
 * Every signatory can be assigned a weight - business ready out of the box!
