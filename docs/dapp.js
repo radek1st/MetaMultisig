@@ -49,18 +49,19 @@ DApp = {
         });
     },
 
-    initContracts: function() {
+    initContracts: async function() {
         DApp.walletContract = new ethers.Contract(DApp.walletAddress, DApp.walletAbi, provider).connect(provider.getSigner());
         console.log('[x] wallet contract initialized.');
 
         DApp.loadAccount();
+        let threshold = await DApp.walletContract.threshold();
 
         fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733')
             .then(function(response) {
                 return response.json();
             })
             .then(function(myJson) {
-                $('#threshold').val(myJson.threshold);
+                $('#threshold').val(threshold);
                 $('#walletAddress').val(myJson.contract);
                 let users = Object.keys(myJson.users);
                 for(let i in users){
