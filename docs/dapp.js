@@ -144,16 +144,19 @@ DApp = {
                 }
             });
         });
-        $("#sell-tokens-button").click(function(){
-            let amount = $("#tokenIn").val() * DApp.tokenDecimalsMultiplier;
-            let rate =  $("#sellRate").val();
-            DApp.walletContract.methods.sellTokens(rate, amount).send({from: DApp.currentAccount}, function(error, res) {
-                if(error) {
-                    console.log("sell", error);
-                } else {
-                    console.log("sell", res);
-                }
-            });
+        $("#send-ether-button").click(function(){
+            let amount = web3.utils.toWei($("#etherOut").val(), "ether");
+            let recipient = $("addressOut").val();
+
+            // let amount = $("#tokenIn").val() * DApp.tokenDecimalsMultiplier;
+            // let rate =  $("#sellRate").val();
+            // DApp.walletContract.methods.sellTokens(rate, amount).send({from: DApp.currentAccount}, function(error, res) {
+            //     if(error) {
+            //         console.log("sell", error);
+            //     } else {
+            //         console.log("sell", res);
+            //     }
+            // });
         });
     },
 
