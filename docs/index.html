@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Off-chain Signing Multisig Wallet</title>
+    <title>Meta Multisig Wallet</title>
 
     <!-- Libraries -->
     <link rel="stylesheet" href="lib/bootstrap.css">
@@ -18,7 +18,7 @@
 <br/>
 <div id="dapp" class="container">
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <a class="navbar-brand" href="#">Off-chain Signing Multisig Wallet</a>
+        <a class="navbar-brand" href="#">Meta Multisig Wallet</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -61,41 +61,11 @@
             </tr>
             </thead>
             <tbody id="keyholders-table">
-            <!--<tr>-->
-                <!--<td>3</td>-->
-                <!--<td>the Bird</td>-->
-            <!--</tr>-->
-            <!--<tr>-->
-                <!--<td>3</td>-->
-                <!--<td>the Bird</td>-->
-            <!--</tr>-->
-            <!--<tr>-->
-                <!--<td>3</td>-->
-                <!--<td>the Bird</td>-->
-            <!--</tr>-->
             </tbody>
         </table>
 
-            <!--<div class="row">-->
-                <!--<div class="col form-group">-->
-                    <!--<label for="etherIn">Ether Amount To Sell:</label>-->
-                    <!--<input id="etherIn" type="number" class="form-control" placeholder="Ether Amount to Sell">-->
-                <!--</div>-->
-                <!--<div class="col form-group">-->
-                    <!--<label for="tokenOut">Token Amount to Buy:</label>-->
-                    <!--<input id="tokenOut" type="number" class="form-control" placeholder="Token Amount to Buy">-->
-                <!--</div>-->
-                <!--<div class="col form-group">-->
-                    <!--<label for="buyRate">Token Buy Rate For 1 Ether:</label>-->
-                    <!--<input id="buyRate" type="number" disabled class="form-control" placeholder="Token Buy Rate">-->
-                <!--</div>-->
-                <!--<div class="col form-group">-->
-                    <!--<label for="buy-tokens-button">&zwnj;</label>-->
-                    <!--<button id="buy-tokens-button" class="btn btn-primary btn-block text-white">Buy Tokens</button>-->
-                <!--</div>-->
-            <!--</div>-->
             <hr class="my-4">
-            <p class="lead">Transactions:</p>
+            <p class="lead">Operations:</p>
             <div class="row">
                 <div class="col form-group">
                     <label for="etherOut">Ether Amount To Send:</label>
@@ -111,6 +81,21 @@
                 </div>
             </div>
 
+        <hr class="my-4">
+        <p class="lead">Transactions:</p>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Nonce</th>
+                <th scope="col">Destination</th>
+                <th scope="col">Value</th>
+                <th scope="col">Current Weights Confirmed</th>
+                <th scope="col">Threshold Reached</th>
+            </tr>
+            </thead>
+            <tbody id="transactions-table">
+            </tbody>
+        </table>
 
     </div>
 

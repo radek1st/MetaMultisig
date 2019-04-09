@@ -51,14 +51,53 @@ DApp = {
                 return response.json();
             })
             .then(function(myJson) {
-                console.log("XXXXX", JSON.stringify(myJson));
-
                 $('#threshold').val(myJson.threshold);
                 $('#walletAddress').val(myJson.contract);
                 let users = Object.keys(myJson.users);
                 for(let i in users){
-                    console.log("zzz", users[i], myJson.users[users[i]]);
                     $('#keyholders-table').append('<tr><td>' + users[i] + '</td><td>' + myJson.users[users[i]] + '</td></tr>');
+                }
+            });
+
+        // {
+        //     "nonces": {
+        //     "0": {
+        //         "signatures": [
+        //             {
+        //                 "user": "0x02",
+        //                 "msg": "something else"
+        //             }
+        //         ],
+        //             "thresholdReached": false
+        //     },
+        //     "1": {
+        //         "signatures": [
+        //             {
+        //                 "user": "0x02",
+        //                 "msg": "something else"
+        //             }
+        //         ],
+        //             "thresholdReached": false
+        //     }
+        // }
+        // }
+
+        fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/signatures')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(myJson) {
+                console.log("XXXXX", JSON.stringify(myJson));
+
+                let nonces = Object.keys(myJson.nonces);
+                for(let i in nonces){
+                    //Nonce	Destination	Value	Current Weights Confirmed	Threshold Reached
+                    console.log("zzz", nonces[i], myJson.nonces[nonces[i]].signatures.length, myJson.nonces[nonces[i]].thresholdReached);
+                    $('#transactions-table').append('<tr><td>' + nonces[i] + '</td>'
+                        + '<td>' + 'destination' + '</td>'
+                        + '<td>' + 'value' + '</td>'
+                        + '<td>' + myJson.nonces[nonces[i]].signatures.length + '</td>'
+                        + '<td>' + myJson.nonces[nonces[i]].thresholdReached + '</td></tr>');
                 }
             });
     },
