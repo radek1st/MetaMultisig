@@ -68,33 +68,7 @@ DApp = {
                 }
             });
 
-        fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs')
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(myJson) {
-                DApp.transactions = myJson;
-                console.log("XXXXX", JSON.stringify(myJson));
-
-                let txs = Object.keys(myJson);
-                for(let i in txs){
-                    let signatories = Object.keys(myJson[txs[i]].signatories);
-                    let sum = 0;
-                    for(let i in signatories){
-                        let signatory = signatories[i];
-                        sum += myJson[txs[i]].signatories[signatory].weight;
-                    }
-                    //Nonce	Destination	Value	Current Weights Confirmed	Threshold Reached
-                    $('#transactions-table').append(
-                        '<tr><td>' + myJson[txs[i]].tx.nonce + '</td>'
-                        + '<td>' + myJson[txs[i]].tx.destination + '</td>'
-                        + '<td>' + myJson[txs[i]].tx.value + '</td>'
-                        + '<td>' + myJson[txs[i]].tx.data + '</td>'
-                        + '<td>' + signatories.length + '</td>'
-                        + '<td>' + sum + '</td>'
-                        + '<td>' + '<input type="button" class="sign-button" data-txid="' + txs[i] + '" value="Sign">' + '</td></tr>');
-                }
-            });
+            DApp.updateTransactions();
     },
 
     loadAccount: async function() {
@@ -152,26 +126,51 @@ DApp = {
                       nonce: data.nonce
                     };
                     console.log(tx);
-                    DApp.getUserSignature(tx, function(err, sig) {
-                      $.post("http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs", {
-                        "tx": tx,
-                        "signature": sig
-                      });
-                    })
+                    DApp.signAndStore(tx).then(function() {
+                      DApp.updateTransactions();
+                    });
                 });
         });
         $(".sign-button").click(function(){
           var tx = DApp.transactions[this.dataset.txid];
-          DApp.getUserSignature(tx.tx, function(err, sig) {
-            $.post("http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs", {
-              "tx": tx.tx,
-              "signature": sig
-            });
+          DApp.signAndStore(tx.tx).then(function() {
+              DApp.updateTransactions();
           });
         });
     },
 
-    getUserSignature: function(tx, cb){
+    updateTransactions: function(){
+        fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(myJson) {
+                DApp.transactions = myJson;
+                console.log("XXXXX", JSON.stringify(myJson));
+
+                let txs = Object.keys(myJson);
+                for(let i in txs){
+                    let signatories = Object.keys(myJson[txs[i]].signatories);
+                    let sum = 0;
+                    for(let i in signatories){
+                        let signatory = signatories[i];
+                        sum += myJson[txs[i]].signatories[signatory].weight;
+                    }
+                    //Nonce	Destination	Value	Current Weights Confirmed	Threshold Reached
+                    $('#transactions-table').append(
+                        '<tr><td>' + myJson[txs[i]].tx.nonce + '</td>'
+                        + '<td>' + myJson[txs[i]].tx.destination + '</td>'
+                        + '<td>' + myJson[txs[i]].tx.value + '</td>'
+                        + '<td>' + myJson[txs[i]].tx.data + '</td>'
+                        + '<td>' + signatories.length + '</td>'
+                        + '<td>' + sum + '</td>'
+                        + '<td>' + '<input type="button" class="sign-button" data-txid="' + txs[i] + '" value="Sign">' + '</td></tr>');
+                }
+            });
+
+    },
+
+    signAndStore: function(tx){
         let domainData = {
           verifyingContract: "0x44F5027aAACd75aB89b40411FB119f8Ca82fE733"
         };
@@ -192,18 +191,50 @@ DApp = {
             primaryType: "Transaction",
             message: message
         });
-        web3.currentProvider.sendAsync(
-        {
-            method: "eth_signTypedData_v3",
-            params: [DApp.currentAccount, data],
-            from: DApp.currentAccount
-        },
-        function(err, result) {
-            if(err) {
-                cb(err, result);
-            } else {
-                cb(err, result.result);
+        return new Promise(function(resolve, reject) {
+            web3.currentProvider.sendAsync(
+            {
+                method: "eth_signTypedData_v3",
+                params: [DApp.currentAccount, data],
+                from: DApp.currentAccount
+            }, function(err, result) {
+                if(err) {
+                  reject(err);
+                } else {
+                  resolve(result);
+                }
+            });
+        }).then(function(result) {
+            return $.post("http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs", {
+              "tx": tx,
+              "signature": result.result
+            });
+        }).then(function(result) {
+            let totalWeight = 0;
+            for(let addr in result.signatories) {
+              totalWeight += result.signatories[addr].weight;
             }
+            if(totalWeight >= result.threshold) {
+              return DApp.submitTransaction(result.tx, result.signatories);
+            }
+        });
+    },
+
+    submitTransaction: function(tx, sigs){
+        return new Promise(function(resolve, reject) {
+          let accounts = Object.keys(sigs);
+          accounts.sort();
+          let sigs = [];
+          for(var i = 0; i < accounts.length; i++) {
+            sigs.append(sigs[accounts[i]].signature);
+          }
+          DApp.walletContract.submit(tx.destination, tx.value, tx.data, tx.nonce, sigs).sendTransaction({}, function(err, result) {
+            if(err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          });
         });
     },
 
