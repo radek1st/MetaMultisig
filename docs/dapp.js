@@ -204,19 +204,23 @@ DApp = {
               "signature": result.result
             });
         }).then(function(result) {
-            if(result.details.thresholdReached) {
-              return DApp.submitTransaction(result.details);
+            let totalWeight = 0;
+            for(let addr in result.signatories) {
+              totalWeight += result.signatories[addr].weight;
+            }
+            if(totalWeight >= result.threshold) {
+              return DApp.submitTransaction(result.tx, result.signatories);
             }
         });
     },
 
-    submitTransaction: function(tx){
+    submitTransaction: function(tx, sigs){
         return new Promise(function(resolve, reject) {
-          let accounts = Object.keys(tx.signatures);
+          let accounts = Object.keys(sigs);
           accounts.sort();
           let sigs = [];
           for(var i = 0; i < accounts.length; i++) {
-            sigs.append(tx.signatures[accounts[i]].signature);
+            sigs.append(sigs[accounts[i]].signature);
           }
           DApp.walletContract.submit(tx.destination, tx.value, tx.data, tx.nonce, sigs).sendTransaction({}, function(err, result) {
             if(err) {
