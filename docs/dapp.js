@@ -162,8 +162,8 @@ DApp = {
                 for(let i in txs){
                     let signatories = Object.keys(myJson[txs[i]].signatories);
                     let sum = 0;
-                    for(let i in signatories){
-                        let signatory = signatories[i];
+                    for(let j in signatories){
+                        let signatory = signatories[j];
                         sum += myJson[txs[i]].signatories[signatory].weight;
                     }
                     let destination = await DApp.lookupAddress(myJson[txs[i]].tx.destination);
