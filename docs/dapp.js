@@ -280,7 +280,6 @@ DApp = {
 
     initFrontend: function(){
         $('#userWallet').val(DApp.currentAccount);
-        //$('#walletAddress').val(DApp.walletAddress);
         DApp.updateEtherBalance();
     }
 }
