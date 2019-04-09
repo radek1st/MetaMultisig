@@ -15,7 +15,7 @@ curl -X POST -H "Content-Type: application/json" --data '{"contract":"0x44F5027a
 Create a sample transaction:
 
 ```
-curl -X POST -H "Content-Type: application/json" --data '{"tx":{"nonce": 0, "destination": "0xa303ddC620aa7d1390BACcc8A495508B183fab59", "value": "1000000000000000000", "data": "0x"}, "signature": "foo"}' http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs
+curl -X POST -H "Content-Type: application/json" --data '{"tx":{"nonce": "0", "destination": "0xa303ddC620aa7d1390BACcc8A495508B183fab59", "value": "1000000000000000000", "data": "0x"}, "signature": "foo"}' http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs
 ```
 
 ## Run UI

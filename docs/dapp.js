@@ -142,18 +142,24 @@ DApp = {
             });
         });
         $("#send-ether-button").click(function(){
-            let amount = web3.utils.toWei($("#etherOut").val(), "ether");
-            let recipient = $("addressOut").val();
-
-            // let amount = $("#tokenIn").val() * DApp.tokenDecimalsMultiplier;
-            // let rate =  $("#sellRate").val();
-            // DApp.walletContract.methods.sellTokens(rate, amount).send({from: DApp.currentAccount}, function(error, res) {
-            //     if(error) {
-            //         console.log("sell", error);
-            //     } else {
-            //         console.log("sell", res);
-            //     }
-            // });
+            fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/nextNonce ')
+                .then(function(response) {
+                    return response.json();
+                }).then(function(data) {
+                    let tx = {
+                      destination: $("#addressOut").val(),
+                      value: web3.utils.toWei($("#etherOut").val(), "ether"),
+                      data: "0x",
+                      nonce: data.nonce
+                    };
+                    console.log(tx);
+                    DApp.getUserSignature(tx, function(err, sig) {
+                      $.post("http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs", {
+                        "tx": tx,
+                        "signature": sig
+                      });
+                    })
+                });
         });
         $(".sign-button").click(function(){
           var tx = DApp.transactions[this.dataset.txid];
