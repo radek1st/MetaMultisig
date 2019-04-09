@@ -15,6 +15,7 @@ DApp = {
     emptyAddress: '0x0000000000000000000000000000000000000000',
     walletAddress: "0x44F5027aAACd75aB89b40411FB119f8Ca82fE733",
     apiServer: "http://13.210.217.194:8080/api/contracts",
+    threshold: 0,
 
     init: function() {
         console.log('[x] Initializing DApp.');
@@ -54,14 +55,14 @@ DApp = {
         console.log('[x] wallet contract initialized.');
 
         DApp.loadAccount();
-        let threshold = await DApp.walletContract.threshold();
+        DApp.threshold = await DApp.walletContract.threshold();
 
         fetch(DApp.apiServer + '/' + DApp.walletAddress)
             .then(function(response) {
                 return response.json();
             })
             .then(async function(myJson) {
-                $('#threshold').val(threshold);
+                $('#threshold').val(DApp.threshold);
                 $('#walletAddress').val(myJson.contract);
                 let users = Object.keys(myJson.users);
                 for(let i in users){
@@ -156,8 +157,6 @@ DApp = {
             })
             .then(async function(myJson) {
                 DApp.transactions = myJson;
-                console.log("XXXXX", JSON.stringify(myJson));
-
                 let txs = Object.keys(myJson);
                 for(let i in txs){
                     let signatories = Object.keys(myJson[txs[i]].signatories);
@@ -167,19 +166,28 @@ DApp = {
                         sum += myJson[txs[i]].signatories[signatory].weight;
                     }
                     let destination = await DApp.lookupAddress(myJson[txs[i]].tx.destination);
+                    let data = myJson[txs[i]].tx.data;
+                    if(data.startsWith("0xf1161b8f")) data = "Add Keyholder";
+
+                    let button;
+                    if(sum>=DApp.threshold) {
+                        button = '<input disabled type="button" class="sign-button" value="Sign">';
+                    } else {
+                        button = '<input type="button" class="sign-button" value="Sign">';
+                    }
+
                     //Nonce	Destination	Value	Current Weights Confirmed	Threshold Reached
                     let markup = $('#transactions-table').append(
                         '<tr><td>' + myJson[txs[i]].tx.nonce + '</td>'
                         + '<td>' + destination + '</td>'
                         + '<td>' + ethers.utils.formatEther(myJson[txs[i]].tx.value) + '</td>'
-                        + '<td>' + myJson[txs[i]].tx.data + '</td>'
-                        + '<td>' + signatories.length + '</td>'
-                        + '<td>' + sum + '</td>'
-                        + '<td>' + '<input type="button" class="sign-button" value="Sign">' + '</td></tr>');
+                        + '<td>' + data + '</td>'
+                        + '<td>' + sum  + '</td>'
+                        + '<td>' + DApp.threshold + '</td>'
+                        + '<td>' + button + '</td></tr>');
                     DApp.addSignHandler($("input", markup), myJson[txs[i]].tx);
                 }
             });
-
     },
 
     signAndStore: function(tx){
