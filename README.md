@@ -1,5 +1,7 @@
 
-# MetaMultisig - Next Generation Multisig Wallet - Feature Rich, Scaling Off-Chain
+# MetaMultisig
+
+**Next Generation Multisig Wallet - Feature Rich, Scaling Off-Chain**
 
 ## About
 
