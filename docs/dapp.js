@@ -29,7 +29,7 @@ DApp = {
                 window.addEventListener('message', ({ data }) => {
                     if (data && data.type && data.type === 'ETHEREUM_PROVIDER_SUCCESS') {
                         // Use injected provider
-                        web3 = new Web3(ethereum);
+                        provider = new ethers.providers.Web3Provider(ethereum);
                         console.log('[x] web3 object initialized.');
                         DApp.initContracts();
                     } else {
@@ -42,7 +42,7 @@ DApp = {
             }
             // If web3 is injected use it's provider
             else {
-                web3 = new Web3(web3.currentProvider);
+                provider = new ethers.providers.Web3Provider(web3.currentProvider);
                 console.log('[x] web3 object initialized.');
                 DApp.initContracts();
             }
@@ -50,7 +50,7 @@ DApp = {
     },
 
     initContracts: function() {
-        DApp.walletContract = new web3.eth.Contract(DApp.walletAbi, DApp.walletAddress);
+        DApp.walletContract = new ethers.Contract(DApp.walletAddress, DApp.walletAbi, provider).connect(provider.getSigner());
         console.log('[x] wallet contract initialized.');
 
         DApp.loadAccount();
@@ -72,17 +72,12 @@ DApp = {
     },
 
     loadAccount: async function() {
-        await ethereum.enable();
-        web3.eth.getAccounts(function(error, accounts) {
-            if(error) {
-                console.error("[x] Error loading accounts", error);
-            } else {
-                DApp.currentAccount = accounts[0];
-                console.log("[x] Using account", DApp.currentAccount);
+        ethereum.enable().then(function(accounts) {
+            DApp.currentAccount = accounts[0];
+            console.log("[x] Using account", DApp.currentAccount);
 
-                DApp.initActions();
-                DApp.initFrontend();
-            }
+            DApp.initActions();
+            DApp.initFrontend();
         });
     },
 
@@ -100,7 +95,7 @@ DApp = {
             $("#tokenIn").val($("#etherOut").val() * $("#sellRate").val());
         });
         $("#buy-tokens-button").click(function(){
-            let amount = web3.utils.toWei($("#etherIn").val().toString(), "ether");
+            let amount = ethers.utils.parseEther($("#etherIn").val().toString());
             let rate =  $("#buyRate").val();
             console.log("rate", rate);
             let tx = {value: amount, from: DApp.currentAccount};
@@ -121,7 +116,7 @@ DApp = {
                 }).then(function(data) {
                     let tx = {
                       destination: $("#addressOut").val(),
-                      value: web3.utils.toWei($("#etherOut").val(), "ether"),
+                      value: ethers.utils.parseEther($("#etherOut").val()).toString(),
                       data: "0x",
                       nonce: data.nonce
                     };
@@ -192,7 +187,7 @@ DApp = {
             message: message
         });
         return new Promise(function(resolve, reject) {
-            web3.currentProvider.sendAsync(
+            ethereum.sendAsync(
             {
                 method: "eth_signTypedData_v3",
                 params: [DApp.currentAccount, data],
@@ -221,41 +216,23 @@ DApp = {
     },
 
     submitTransaction: function(tx, signatories){
-        return new Promise(function(resolve, reject) {
-          let accounts = Object.keys(signatories);
-          accounts.sort();
-          let sigs = [];
-          for(var i = 0; i < accounts.length; i++) {
-            sigs.push(signatories[accounts[i]].signature);
-          }
-          DApp.walletContract.methods.submit(tx.destination, tx.value, tx.data, tx.nonce, sigs).send({from: DApp.currentAccount}, function(err, result) {
-            if(err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          });
-        });
+        let accounts = Object.keys(signatories);
+        accounts.sort();
+        let sigs = [];
+        for(var i = 0; i < accounts.length; i++) {
+          sigs.push(signatories[accounts[i]].signature);
+        }
+        return DApp.walletContract.submit(tx.destination, tx.value, tx.data, tx.nonce, sigs);
     },
 
     updateEtherBalance: function(){
-        web3.eth.getBalance(DApp.currentAccount, function(error, ethBalance) {
-            if (error) {
-                // handle error
-                console.log("Couldn't get user ether balance: ", error);
-            } else {
-                console.log("user Eth balance", ethBalance);
-                $('#userEtherBalance').val(web3.utils.fromWei(ethBalance.toString(), "ether"));
-            }
+        provider.getBalance(DApp.currentAccount).then(function(ethBalance) {
+            console.log("user Eth balance", ethBalance);
+            $('#userEtherBalance').val(ethers.utils.formatEther(ethBalance));
         });
-        web3.eth.getBalance(DApp.walletAddress, function(error, ethBalance) {
-            if (error) {
-                // handle error
-                console.log("Couldn't get wallet ether balance: ", error);
-            } else {
-                console.log("EX Eth balance", ethBalance);
-                $('#walletEtherBalance').val(web3.utils.fromWei(ethBalance.toString(), "ether"));
-            }
+        provider.getBalance(DApp.walletAddress).then(function(ethBalance) {
+            console.log("EX Eth balance", ethBalance);
+            $('#walletEtherBalance').val(ethers.utils.formatEther(ethBalance));
         });
     },
 
