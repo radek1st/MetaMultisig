@@ -220,15 +220,15 @@ DApp = {
         });
     },
 
-    submitTransaction: function(tx, sigs){
+    submitTransaction: function(tx, signatories){
         return new Promise(function(resolve, reject) {
-          let accounts = Object.keys(sigs);
+          let accounts = Object.keys(signatories);
           accounts.sort();
           let sigs = [];
           for(var i = 0; i < accounts.length; i++) {
-            sigs.append(sigs[accounts[i]].signature);
+            sigs.push(signatories[accounts[i]].signature);
           }
-          DApp.walletContract.submit(tx.destination, tx.value, tx.data, tx.nonce, sigs).sendTransaction({}, function(err, result) {
+          DApp.walletContract.methods.submit(tx.destination, tx.value, tx.data, tx.nonce, sigs).send({from: DApp.currentAccount}, function(err, result) {
             if(err) {
               reject(err);
             } else {
