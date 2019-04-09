@@ -126,25 +126,15 @@ DApp = {
                       nonce: data.nonce
                     };
                     console.log(tx);
-                    DApp.getUserSignature(tx, function(err, sig) {
-                      $.post("http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs", {
-                        "tx": tx,
-                        "signature": sig
-                      }).then(function() {
-                        DApp.updateTransactions();
-                      });
-                    })
+                    DApp.signAndStore(tx).then(function() {
+                      DApp.updateTransactions();
+                    });
                 });
         });
         $(".sign-button").click(function(){
           var tx = DApp.transactions[this.dataset.txid];
-          DApp.getUserSignature(tx.tx, function(err, sig) {
-            $.post("http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs", {
-              "tx": tx.tx,
-              "signature": sig
-            }).then(function() {
+          DApp.signAndStore(tx.tx).then(function() {
               DApp.updateTransactions();
-            });
           });
         });
     },
@@ -174,7 +164,7 @@ DApp = {
             });
     },
 
-    getUserSignature: function(tx, cb){
+    signAndStore: function(tx){
         let domainData = {
           verifyingContract: "0x44F5027aAACd75aB89b40411FB119f8Ca82fE733"
         };
@@ -195,18 +185,46 @@ DApp = {
             primaryType: "Transaction",
             message: message
         });
-        web3.currentProvider.sendAsync(
-        {
-            method: "eth_signTypedData_v3",
-            params: [DApp.currentAccount, data],
-            from: DApp.currentAccount
-        },
-        function(err, result) {
-            if(err) {
-                cb(err, result);
-            } else {
-                cb(err, result.result);
+        return new Promise(function(resolve, reject) {
+            web3.currentProvider.sendAsync(
+            {
+                method: "eth_signTypedData_v3",
+                params: [DApp.currentAccount, data],
+                from: DApp.currentAccount
+            }, function(err, result) {
+                if(err) {
+                  reject(err);
+                } else {
+                  resolve(result);
+                }
+            });
+        }).then(function(result) {
+            return $.post("http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/txs", {
+              "tx": tx,
+              "signature": result.result
+            });
+        }).then(function(result) {
+            if(result.details.thresholdReached) {
+              return DApp.submitTransaction(result.details);
             }
+        });
+    },
+
+    submitTransaction: function(tx){
+        return new Promise(function(resolve, reject) {
+          let accounts = Object.keys(tx.signatures);
+          accounts.sort();
+          let sigs = [];
+          for(var i = 0; i < accounts.length; i++) {
+            sigs.append(tx.signatures[accounts[i]].signature);
+          }
+          DApp.walletContract.submit(tx.destination, tx.value, tx.data, tx.nonce, sigs).sendTransaction({}, function(err, result) {
+            if(err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          });
         });
     },
 
