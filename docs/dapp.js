@@ -82,49 +82,28 @@ DApp = {
     },
 
     initActions: function() {
-        $("#etherIn").on("paste keyup", function() {
-            $("#tokenOut").val($("#etherIn").val() * $("#buyRate").val());
-        });
-        $("#tokenOut").on("paste keyup", function() {
-            $("#etherIn").val($("#tokenOut").val() / $("#buyRate").val());
-        });
-        $("#tokenIn").on("paste keyup", function() {
-            $("#etherOut").val($("#tokenIn").val() / $("#sellRate").val());
-        });
-        $("#etherOut").on("paste keyup", function() {
-            $("#tokenIn").val($("#etherOut").val() * $("#sellRate").val());
-        });
-        $("#buy-tokens-button").click(function(){
-            let amount = ethers.utils.parseEther($("#etherIn").val().toString());
-            let rate =  $("#buyRate").val();
-            console.log("rate", rate);
-            let tx = {value: amount, from: DApp.currentAccount};
-            console.log("tx", tx);
-            DApp.walletContract.methods.buyTokens(rate).send(tx, function(error, res) {
-                if(error) {
-                    console.log(error);
-                } else {
-                    console.log("res", res);
-                    // /$('#userTokenBalance').val(web3.utils.fromWei(balance, "ether"));
-                }
-            });
-        });
         $("#send-ether-button").click(function(){
             fetch('http://localhost:8080/api/contracts/0x44F5027aAACd75aB89b40411FB119f8Ca82fE733/nextNonce ')
                 .then(function(response) {
                     return response.json();
                 }).then(function(data) {
+
+                DApp.walletContract.nextNonce().then(function(nextNonce) {
+                    if(nextNonce < data.nonce) nextNonce = data.nonce;
+
+                    console.log("Using nonce", nextNonce);
                     let tx = {
-                      destination: $("#addressOut").val(),
-                      value: ethers.utils.parseEther($("#etherOut").val()).toString(),
-                      data: "0x",
-                      nonce: data.nonce
+                        destination: $("#addressOut").val(),
+                        value: ethers.utils.parseEther($("#etherOut").val()).toString(),
+                        data: "0x",
+                        nonce: nextNonce
                     };
                     console.log(tx);
                     DApp.signAndStore(tx).then(function() {
-                      DApp.updateTransactions();
+                        DApp.updateTransactions();
                     });
                 });
+            });
         });
         $(".sign-button").click(function(){
           var tx = DApp.transactions[this.dataset.txid];
@@ -233,25 +212,6 @@ DApp = {
         provider.getBalance(DApp.walletAddress).then(function(ethBalance) {
             console.log("EX Eth balance", ethBalance);
             $('#walletEtherBalance').val(ethers.utils.formatEther(ethBalance));
-        });
-    },
-
-    updateTokenBalance: function(){
-        DApp.tokenContract.methods.balanceOf(DApp.currentAccount).call(function(error, balance) {
-            if(error) {
-                console.log(error);
-            } else {
-                console.log("user token balance", balance);
-                $('#userTokenBalance').val(balance/DApp.tokenDecimalsMultiplier);
-            }
-        });
-        DApp.tokenContract.methods.allowance(DApp.currentAccount, DApp.walletAddress).call(function(error, balance) {
-            if(error) {
-                console.log(error);
-            } else {
-                console.log("user token approved", balance);
-                $('#userTokenApproved').val(balance/DApp.tokenDecimalsMultiplier);
-            }
         });
     },
 
