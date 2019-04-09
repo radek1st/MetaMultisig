@@ -38,16 +38,16 @@
         <!--<hr class="my-4">-->
             <div class="row">
                 <div class="col form-group col-md-6">
-                    <label for="userWallet">Wallet Address:</label>
-                    <input id="userWallet" type="text" disabled class="form-control" placeholder="Wallet Ethereum Address">
+                    <label for="walletAddress">Wallet Address:</label>
+                    <input id="walletAddress" type="text" disabled class="form-control" placeholder="Wallet Ethereum Address">
                 </div>
                 <div class="col form-group">
                 <label for="threshold">Wallet Threshold:</label>
                 <input id="threshold" type="text" disabled class="form-control" placeholder="Threshold">
                 </div>
                 <div class="col form-group">
-                    <label for="userEtherBalance">Ether Balance:</label>
-                    <input id="userEtherBalance" type="text" disabled class="form-control" placeholder="Wallet Ethereum Balance">
+                    <label for="walletEtherBalance">Ether Balance:</label>
+                    <input id="walletEtherBalance" type="text" disabled class="form-control" placeholder="Wallet Ethereum Balance">
                 </div>
 
             </div>
@@ -60,19 +60,19 @@
                 <th scope="col">Weight</th>
             </tr>
             </thead>
-            <tbody>
-            <tr>
-                <th scope="row">1</th>
-                <td>Otto</td>
-            </tr>
-            <tr>
-                <th scope="row">2</th>
-                <td>Thornton</td>
-            </tr>
-            <tr>
-                <th scope="row">3</th>
-                <td>the Bird</td>
-            </tr>
+            <tbody id="keyholders-table">
+            <!--<tr>-->
+                <!--<td>3</td>-->
+                <!--<td>the Bird</td>-->
+            <!--</tr>-->
+            <!--<tr>-->
+                <!--<td>3</td>-->
+                <!--<td>the Bird</td>-->
+            <!--</tr>-->
+            <!--<tr>-->
+                <!--<td>3</td>-->
+                <!--<td>the Bird</td>-->
+            <!--</tr>-->
             </tbody>
         </table>
 
@@ -98,20 +98,16 @@
             <p class="lead">Transactions:</p>
             <div class="row">
                 <div class="col form-group">
-                    <label for="tokenIn">Token Amount To Sell:</label>
-                    <input id="tokenIn" type="number" class="form-control" placeholder="Token Amount to Sell">
+                    <label for="etherOut">Ether Amount To Send:</label>
+                    <input id="etherOut" type="number" class="form-control" placeholder="Ether Amount to Sell">
                 </div>
                 <div class="col form-group">
-                    <label for="etherOut">Ether Amount To Buy:</label>
-                    <input id="etherOut" type="number" class="form-control" placeholder="Ether Amount to Buy">
+                    <label for="addressOut">Destination Address:</label>
+                    <input id="addressOut" type="number" disabled class="form-control" placeholder="Destination Address">
                 </div>
                 <div class="col form-group">
-                    <label for="sellRate">Token Sell Rate For 1 Ether:</label>
-                    <input id="sellRate" type="number" disabled class="form-control" placeholder="Token Sell Rate">
-                </div>
-                <div class="col form-group">
-                    <button id="approve-tokens-button" class="btn btn-primary btn-block text-white">Approve Tokens</button>
-                    <button id="sell-tokens-button" class="btn btn-primary btn-block text-white">Sell Tokens</button>
+                    <label for="addressOut">.</label>
+                    <button id="sell-tokens-button" class="btn btn-primary btn-block text-white">Send Ether</button>
                 </div>
             </div>
 

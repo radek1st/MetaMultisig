@@ -52,6 +52,14 @@ DApp = {
             })
             .then(function(myJson) {
                 console.log("XXXXX", JSON.stringify(myJson));
+
+                $('#threshold').val(myJson.threshold);
+                $('#walletAddress').val(myJson.contract);
+                let users = Object.keys(myJson.users);
+                for(let i in users){
+                    console.log("zzz", users[i], myJson.users[users[i]]);
+                    $('#keyholders-table').append('<tr><td>' + users[i] + '</td><td>' + myJson.users[users[i]] + '</td></tr>');
+                }
             });
     },
 
@@ -94,16 +102,6 @@ DApp = {
                 } else {
                     console.log("res", res);
                     // /$('#userTokenBalance').val(web3.utils.fromWei(balance, "ether"));
-                }
-            });
-        });
-        $("#approve-tokens-button").click(function(){
-            let amount = $("#tokenIn").val() * DApp.tokenDecimalsMultiplier;
-            DApp.tokenContract.methods.approve(DApp.walletAddress, amount).send({from: DApp.currentAccount}, function(error, res) {
-                if(error) {
-                    console.log("approve", error);
-                } else {
-                    console.log("approve", res);
                 }
             });
         });
@@ -158,39 +156,13 @@ DApp = {
                 $('#userTokenApproved').val(balance/DApp.tokenDecimalsMultiplier);
             }
         });
-        DApp.tokenContract.methods.balanceOf(DApp.walletAddress).call(function(error, balance) {
-            if(error) {
-                console.log(error);
-            } else {
-                console.log("ex token balance", balance);
-                $('#walletTokenBalance').val(balance/DApp.tokenDecimalsMultiplier);
-            }
-        });
-    },
-
-    updateRates: function(){
-        DApp.walletContract.methods.buyRate().call(function(error, rate) {
-            if(error) {
-                console.log(error);
-            } else {
-                $('#buyRate').val(rate);
-            }
-        });
-        DApp.walletContract.methods.sellRate().call(function(error, rate) {
-            if(error) {
-                console.log(error);
-            } else {
-                $('#sellRate').val(rate);
-            }
-        });
     },
 
     initFrontend: function(){
         $('#userWallet').val(DApp.currentAccount);
-        $('#walletAddress').val(DApp.walletAddress);
+        //$('#walletAddress').val(DApp.walletAddress);
         DApp.updateEtherBalance();
         DApp.updateTokenBalance();
-        DApp.updateRates();
     }
 }
 
